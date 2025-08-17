@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Study Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .auth-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .auth-tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .main-content.active {
+            display: grid;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+        }
+
+        .panel h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            color: #4a5568;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active, .nav-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .pomodoro-timer {
+            text-align: center;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .group-list, .note-list, .schedule-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .group-item, .note-item, .schedule-item {
+            background: #f7fafc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .group-item h4, .note-item h4, .schedule-item h4 {
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .group-item p, .note-item p, .schedule-item p {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #48bb78;
+        }
+
+        .status-away {
+            background: #ed8936;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .hero-image {
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                justify-content: center;
+            }
+            
+            .timer-display {
+                font-size: 2.5em;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #f56565;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-image">
+            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/bd15d75f-bf4d-41f6-a050-c8f5c9235338.png" alt="Modern study room with multiple students working at desks with laptops, books, and collaborative workspace setup with warm lighting and motivational posters" />
+        </div>
+
+        <div class="header">
+            <h1>Virtual Study Room</h1>
+            <p>Collaborate, Focus, and Achieve Together</p>
+        </div>
+
+        <div class="auth-section" id="authSection">
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+                <div class="auth-tab" onclick="switchTab('register')">Register</div>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username:</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="regUsername">Username:</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password:</label>
+                    <input type="password" id="regConfirmPassword" required>
+                </div>
+                <button type="submit" class="btn">Register</button>
+            </form>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="panel">
+                <div class="user-info">
+                    <h2 id="welcomeMessage">Welcome, User!</h2>
+                    <p>Ready to boost your productivity?</p>
+                </div>
+
+                <div class="pomodoro-timer">
+                    <h3>Pomodoro Timer</h3>
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" onclick="startTimer()">Start</button>
+                        <button class="timer-btn" onclick="pauseTimer()">Pause</button>
+                        <button class="timer-btn" onclick="resetTimer()">Reset</button>
+                        <button class="timer-btn" onclick="setBreakTimer()">Break</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="sessionsCount">0</h3>
+                        <p>Study Sessions</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalTime">0h</h3>
+                        <p>Total Time</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Study Tools</h2>
+                
+                <div class="nav-menu">
+                    <button class="nav-btn active" onclick="showSection('groups')">Groups</button>
+                    <button class="nav-btn" onclick="showSection('notes')">Notes</button>
+                    <button class="nav-btn" onclick="showSection('schedule')">Schedule</button>
+                </div>
+
+                <div class="section active" id="groups">
+                    <h3>Study Groups</h3>
+                    <div class="form-group">
+                        <input type="text" id="groupName" placeholder="Group name">
+                        <button class="btn" onclick="createGroup()">Create Group</button>
+                    </div>
+                    <div class="group-list" id="groupList">
+                        <div class="group-item">
+                            <h4><span class="status-indicator status-online"></span>Mathematics Study Group</h4>
+                            <p>5 members online - Currently studying Calculus</p>
+                        </div>
+                        <div class="group-item">
+                            <h4><span class="status-indicator status-away"></span>Computer Science Hub</h4>
+                            <p>3 members online - Working on algorithms</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section" id="notes">
+                    <h3>Study Notes</h3>
+                    <div class="form-group">
+                        <input type="text" id="noteTitle" placeholder="Note title">
+                        <textarea id="noteContent" placeholder="Write your notes here..." rows="4" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                        <button class="btn" onclick="addNote()">Add Note</button>
+                    </div>
+                    <div class="note-list" id="noteList">
+                        <div class="note-item">
+                            <h4>Physics Formulas</h4>
+                            <p>F = ma, E = mc², v = u + at...</p>
+                        </div>
+                        <div class="note-item">
+                            <h4>History Timeline</h4>
+                            <p>World War II events and dates...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section" id="schedule">
+                    <h3>Study Schedule</h3>
+                    <div class="form-group">
+                        <input type="text" id="scheduleSubject" placeholder="Subject">
+                        <input type="datetime-local" id="scheduleTime">
+                        <button class="btn" onclick="addSchedule()">Add to Schedule</button>
+                    </div>
+                    <div class="schedule-list" id="scheduleList">
+                        <div class="schedule-item">
+                            <h4>Mathematics - Calculus</h4>
+                            <p>Today, 3:00 PM - 4:30 PM</p>
+                        </div>
+                        <div class="schedule-item">
+                            <h4>Physics - Mechanics</h4>
+                            <p>Tomorrow, 10:00 AM - 11:30 AM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Simulated data storage (In actual implementation, this would be handled by C CGI scripts)
+        let currentUser = null;
+        let timerState = {
+            minutes: 25,
+            seconds: 0,
+            isRunning: false,
+            isBreak: false,
+            interval: null
+        };
+        let userStats = {
+            sessions: 0,
+            totalTime: 0
+        };
+
+        // Authentication functions (Would call C CGI scripts in actual implementation)
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Form').classList.add('active');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // In actual implementation, this would call a C CGI script
+            // fetch('/cgi-bin/login.cgi', { method: 'POST', body: formData })
+            
+            if (username && password) {
+                login(username);
+            } else {
+                showNotification('Please fill in all fields', 'error');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            // In actual implementation, this would call a C CGI script
+            // fetch('/cgi-bin/register.cgi', { method: 'POST', body: formData })
+            
+            if (username && email && password) {
+                showNotification('Registration successful! Please login.');
+                switchTab('login');
+            } else {
+                showNotification('Please fill in all fields', 'error');
+            }
+        });
+
+        function login(username) {
+            currentUser = username;
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainContent').classList.add('active');
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+            loadUserData();
+            showNotification('Login successful!');
+        }
+
+        function loadUserData() {
+            // In actual implementation, this would call C CGI scripts to load user data
+            // fetch('/cgi-bin/getUserData.cgi?user=' + currentUser)
+            
+            // Load from localStorage for demo
+            const savedStats = localStorage.getItem('userStats_' + currentUser);
+            if (savedStats) {
+                userStats = JSON.parse(savedStats);
+                updateStats();
+            }
+        }
+
+        function saveUserData() {
+            // In actual implementation, this would call C CGI scripts to save user data
+            // fetch('/cgi-bin/saveUserData.cgi', { method: 'POST', body: JSON.stringify(userStats) })
+            
+            localStorage.setItem('userStats_' + currentUser, JSON.stringify(userStats));
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(sectionName).classList.add('active');
+        }
+
+        // Pomodoro Timer functions
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerDisplay');
+            const formattedMinutes = timerState.minutes.toString().padStart(2, '0');
+            const formattedSeconds = timerState.seconds.toString().padStart(2, '0');
+            display.textContent = `${formattedMinutes}:${formattedSeconds}`;
+        }
+
+        function startTimer() {
+            if (timerState.isRunning) return;
+            
+            timerState.isRunning = true;
+            timerState.interval = setInterval(() => {
+                if (timerState.seconds === 0) {
+                    if (timerState.minutes === 0) {
+                        // Timer finished
+                        timerFinished();
+                        return;
+                    }
+                    timerState.minutes--;
+                    timerState.seconds = 59;
+                } else {
+                    timerState.seconds--;
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerState.isRunning = false;
+            clearInterval(timerState.interval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerState.minutes = timerState.isBreak ? 5 : 25;
+            timerState.seconds = 0;
+            updateTimerDisplay();
+        }
+
+        function setBreakTimer() {
+            pauseTimer();
+            timerState.isBreak = true;
+            timerState.minutes = 5;
+            timerState.seconds = 0;
+            updateTimerDisplay();
+        }
+
+        function timerFinished() {
+            pauseTimer();
+            if (!timerState.isBreak) {
+                userStats.sessions++;
+                userStats.totalTime += 25;
+                updateStats();
+                saveUserData();
+                showNotification('Pomodoro session completed! Take a break.');
+                setBreakTimer();
+            } else {
+                showNotification('Break time is over! Ready for another session?');
+                timerState.isBreak = false;
+                timerState.minutes = 25;
+                timerState.seconds = 0;
+                updateTimerDisplay();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('sessionsCount').textContent = userStats.sessions;
+            document.getElementById('totalTime').textContent = `${Math.floor(userStats.totalTime / 60)}h ${userStats.totalTime % 60}m`;
+        }
+
+        // Study Groups functions
+        function createGroup() {
+            const groupName = document.getElementById('groupName').value;
+            if (!groupName) {
+                showNotification('Please enter a group name', 'error');
+                return;
+            }
+            
+            // In actual implementation, this would call a C CGI script
+            // fetch('/cgi-bin/createGroup.cgi', { method: 'POST', body: formData })
+            
+            const groupList = document.getElementById('groupList');
+            const groupItem = document.createElement('div');
+            groupItem.className = 'group-item';
+            groupItem.innerHTML = `
+                <h4><span class="status-indicator status-online"></span>${groupName}</h4>
+                <p>1 member online - Just created</p>
+            `;
+            groupList.appendChild(groupItem);
+            
+            document.getElementById('groupName').value = '';
+            showNotification('Group created successfully!');
+        }
+
+        // Notes functions
+        function addNote() {
+            const title = document.getElementById('noteTitle').value;
+            const content = document.getElementById('noteContent').value;
+            
+            if (!title || !content) {
+                showNotification('Please fill in both title and content', 'error');
+                return;
+            }
+            
+            // In actual implementation, this would call a C CGI script
+            // fetch('/cgi-bin/addNote.cgi', { method: 'POST', body: formData })
+            
+            const noteList = document.getElementById('noteList');
+            const noteItem = document.createElement('div');
+            noteItem.className = 'note-item';
+            noteItem.innerHTML = `
+                <h4>${title}</h4>
+                <p>${content.substring(0, 100)}${content.length > 100 ? '...' : ''}</p>
+            `;
+            noteList.appendChild(noteItem);
+            
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            showNotification('Note added successfully!');
+        }
+
+        // Schedule functions
+        function addSchedule() {
+            const subject = document.getElementById('scheduleSubject').value;
+            const time = document.getElementById('scheduleTime').value;
+            
+            if (!subject || !time) {
+                showNotification('Please fill in both subject and time', 'error');
+                return;
+            }
+            
+            // In actual implementation, this would call a C CGI script
+            // fetch('/cgi-bin/addSchedule.cgi', { method: 'POST', body: formData })
+            
+            const scheduleList = document.getElementById('scheduleList');
+            const scheduleItem = document.createElement('div');
+            scheduleItem.className = 'schedule-item';
+            
+            const scheduleDate = new Date(time);
+            const formattedDate = scheduleDate.toLocaleDateString();
+            const formattedTime = scheduleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            scheduleItem.innerHTML = `
+                <h4>${subject}</h4>
+                <p>${formattedDate}, ${formattedTime}</p>
+            `;
+            scheduleList.appendChild(scheduleItem);
+            
+            document.getElementById('scheduleSubject').value = '';
+            document.getElementById('scheduleTime').value = '';
+            showNotification('Schedule item added successfully!');
+        }
+
+        // Notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTimerDisplay();
+            
+            // Check if user is already logged in (for demo purposes)
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                login(savedUser);
+            }
+        });
+
+        // Save current user on page unload
+        window.addEventListener('beforeunload', function() {
+            if (currentUser) {
+                localStorage.setItem('currentUser', currentUser);
+                saveUserData();
+            }
+        });
+    </script>
+</body>
+</html>
+
